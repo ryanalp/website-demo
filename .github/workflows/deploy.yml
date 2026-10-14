@@ -1,10 +1,11 @@
+```yaml
 name: 🚀 Build and Deploy Website
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -17,9 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # ══════════════════════════════════════════════
   # JOB 1: TEST — Validate the website
-  # ══════════════════════════════════════════════
   test:
     name: 🧪 Test
     runs-on: ubuntu-latest
@@ -31,22 +30,20 @@ jobs:
         run: |
           echo "Checking for required files..."
           test -f src/index.html || (echo "❌ src/index.html missing" && exit 1)
-          test -f src/style.css  || (echo "❌ src/style.css missing" && exit 1)
-          test -f src/script.js  || (echo "❌ src/script.js missing" && exit 1)
+          test -f src/style.css || (echo "❌ src/style.css missing" && exit 1)
+          test -f src/script.js || (echo "❌ src/script.js missing" && exit 1)
           echo "✅ All required files present!"
 
       - name: 🔍 Validate HTML structure
         run: |
           echo "Validating HTML..."
-          grep -q "" src/index.html || (echo "❌ Missing DOCTYPE" && exit 1)
-          grep -q " tag" && exit 1)
-          grep -q "" src/index.html    || (echo "❌ Missing " && exit 1)
-          grep -q "" src/index.html    || (echo "❌ Missing " && exit 1)
+          grep -qi "<!DOCTYPE html" src/index.html || (echo "❌ Missing DOCTYPE" && exit 1)
+          grep -qi "<html" src/index.html || (echo "❌ Missing <html> tag" && exit 1)
+          grep -qi "<head" src/index.html || (echo "❌ Missing <head> tag" && exit 1)
+          grep -qi "<body" src/index.html || (echo "❌ Missing <body> tag" && exit 1)
           echo "✅ HTML structure is valid!"
 
-  # ══════════════════════════════════════════════
   # JOB 2: BUILD — Package the site
-  # ══════════════════════════════════════════════
   build:
     name: 🏗️ Build
     runs-on: ubuntu-latest
@@ -75,9 +72,7 @@ jobs:
           path: dist/
           retention-days: 7
 
-  # ══════════════════════════════════════════════
   # JOB 3: DEPLOY — Publish to GitHub Pages
-  # ══════════════════════════════════════════════
   deploy:
     name: 🚀 Deploy
     runs-on: ubuntu-latest
@@ -86,24 +81,25 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-      steps:
-        - name: 📥 Checkout code
-          uses: actions/checkout@v4
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
 
-        - name: 📁 Prepare site files
-          run: |
-            mkdir -p _site
-            cp -r src/* _site/
-            echo "Site ready for deployment"
+      - name: 📁 Prepare site files
+        run: |
+          mkdir -p _site
+          cp -r src/* _site/
+          echo "Site ready for deployment"
 
-        - name: 🔧 Configure GitHub Pages
+      - name: 🔧 Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-        - name: 📤 Upload Pages artifact
-          uses: actions/upload-pages-artifact@v3
-          with:
-            path: _site
+      - name: 📤 Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
 
-        - name: 🌐 Deploy to GitHub Pages
-          id: deployment
-          uses: actions/deploy-pages@v4
+      - name: 🌐 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
